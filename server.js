@@ -148,7 +148,7 @@ app.post('/order/tambah', (req, res) => {
             // TRIGGER WA NOTA BARU
             db.get("SELECT nama, whatsapp FROM pelanggan WHERE id = ?", [pelanggan_id], (err, p) => {
                 if (p) {
-                    const msg = `*NOTA MASUK - ShoesCare*\nHalo Kak *${p.nama}*,\nSepatu Kakak sudah masuk antrean.\n\nCek nota digital:\nhttp://192.168.1.50:3000/nota/${orderId}\n\nTerima kasih!`;
+                    const msg = `*NOTA MASUK - ShoesCare*\nHalo Kak *${p.nama}*,\nSepatu Kakak sudah masuk antrean.\n\nCek nota digital:\nhttp://192.168.0.194:3000/nota/${orderId}\n\nTerima kasih!`;
                     sendWAMessage(p.whatsapp, msg);
                 }
             });
