@@ -1,43 +1,43 @@
-<div class="w-64 bg-slate-800 text-white flex flex-col h-screen shadow-xl">
-    <div class="p-6 text-2xl font-bold border-b border-slate-700 flex items-center gap-2">
-        <span class="text-blue-400">👟</span> Shoes Care
+<div class="md:hidden bg-slate-900 text-white p-4 flex justify-between items-center sticky top-0 z-50 shadow-md">
+    <h2 class="font-black text-blue-400">SHOESCARE</h2>
+    <button onclick="toggleSidebar()" class="text-2xl p-2 focus:outline-none">☰</button>
+</div>
+
+<aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 bg-slate-900 text-white transform -translate-x-full transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:inset-0 h-screen flex flex-col shadow-xl">
+    <div class="p-8 hidden md:block">
+        <h2 class="text-2xl font-black text-blue-400 leading-none">SHOES<br><span class="text-white">CARE</span></h2>
+        <p class="text-[10px] text-slate-400 uppercase tracking-widest mt-2">Sistem Kasir v2.0</p>
     </div>
-
-    <nav class="flex-grow p-4 space-y-2">
-        <a href="/dashboard" class="flex items-center space-x-3 py-2.5 px-4 rounded transition hover:bg-slate-700">
-            <span>Dashboard</span>
-        </a>
-        <a href="/order" class="flex items-center space-x-3 py-2.5 px-4 rounded transition hover:bg-slate-700">
-            <span>Buat Order Baru</span>
-        </a>
-        <a href="/pelanggan" class="flex items-center space-x-3 py-2.5 px-4 rounded transition hover:bg-slate-700">
-            <span>Database Pelanggan</span>
-        </a>
-        <a href="/list-order" class="flex items-center space-x-3 py-2.5 px-4 rounded transition hover:bg-slate-700">
-            <span>List Orderan</span>
-        </a>
-
+    
+    <nav class="flex-1 px-4 space-y-1 mt-4 md:mt-0 overflow-y-auto">
+        <a href="/dashboard" class="flex items-center space-x-3 py-3 px-4 rounded-xl hover:bg-slate-800 transition"><span>🏠</span> <span class="font-medium">Dashboard</span></a>
+        <a href="/order" class="flex items-center space-x-3 py-3 px-4 rounded-xl hover:bg-slate-800 transition"><span>➕</span> <span class="font-medium">Order Baru</span></a>
+        <a href="/list-order" class="flex items-center space-x-3 py-3 px-4 rounded-xl hover:bg-slate-800 transition"><span>📋</span> <span class="font-medium">List Antrean</span></a>
+        <a href="/pelanggan" class="flex items-center space-x-3 py-3 px-4 rounded-xl hover:bg-slate-800 transition"><span>👥</span> <span class="font-medium">Database</span></a>
+        
         <% if (user && user.role === 'owner') { %>
-            <div class="pt-4 mt-4 border-t border-slate-700">
-                <p class="px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Owner Area</p>
-                <a href="/layanan" class="flex items-center space-x-3 py-2.5 px-4 rounded transition hover:bg-slate-700 text-green-400">
-                    <span>⚙️ Database Layanan</span>
-                </a>
-                <a href="/laporan" class="flex items-center space-x-3 py-2.5 px-4 rounded transition hover:bg-slate-700 text-yellow-400">
-                    <span>📊 Laporan Keuangan</span>
-                </a>
+            <div class="pt-6 mt-6 border-t border-slate-800">
+                <p class="px-4 text-[10px] font-bold text-slate-500 uppercase mb-2">Owner Menu</p>
+                <a href="/layanan" class="flex items-center space-x-3 py-3 px-4 rounded-xl hover:bg-slate-800 text-green-400 transition"><span>⚙️</span> <span class="font-medium">Layanan</span></a>
+                <a href="/laporan" class="flex items-center space-x-3 py-3 px-4 rounded-xl hover:bg-slate-800 text-yellow-400 transition"><span>📊</span> <span class="font-medium">Laporan</span></a>
             </div>
         <% } %>
-
     </nav>
 
-    <div class="p-4 border-t border-slate-700 bg-slate-900">
-        <div class="flex items-center justify-between">
-            <div class="text-sm">
-                <p class="text-slate-400 text-xs">Login sebagai:</p>
-                <p class="font-semibold text-blue-300"><%= user.username %></p>
-            </div>
-            <a href="/logout" class="text-red-400 hover:text-red-300 text-sm font-bold">Keluar</a>
-        </div>
+    <div class="p-6 border-t border-slate-800">
+        <a href="/logout" class="flex items-center space-x-3 py-3 px-4 rounded-xl text-red-400 hover:bg-red-500 hover:text-white transition">
+            <span>🚪</span> <span class="font-medium">Keluar</span>
+        </a>
     </div>
-</div>
+</aside>
+
+<div id="overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/60 z-30 hidden transition-opacity duration-300"></div>
+
+<script>
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        sidebar.classList.toggle('-translate-x-full');
+        overlay.classList.toggle('hidden');
+    }
+</script>
