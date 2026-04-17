@@ -1,42 +1,31 @@
 <%- include('partials/header') %>
 <%- include('partials/sidebar') %>
 
-<div class="flex-1 flex flex-col h-screen">
-    <header class="bg-white shadow-sm p-4 flex justify-between items-center border-b">
-        <h1 class="text-xl font-bold text-gray-800 uppercase tracking-wide">Ringkasan Hari Ini</h1>
-        <div class="text-sm text-gray-500">
-            <%= new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) %>
-        </div>
+<main class="flex-1 p-4 md:p-10">
+    <header class="mb-8">
+        <h1 class="text-2xl md:text-3xl font-black text-gray-800">Selamat Datang, <%= user.username %>! 👋</h1>
+        <p class="text-gray-500">Semangat kerjanya, jangan lupa cek antrean hari ini.</p>
     </header>
 
-    <main class="flex-1 overflow-y-auto p-6 bg-gray-50">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-center h-32">
-                <span class="text-gray-400 text-xs uppercase font-bold tracking-wider">Antrean Cuci</span>
-                <span class="text-4xl font-black text-blue-600">0</span>
-            </div>
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-center h-32">
-                <span class="text-gray-400 text-xs uppercase font-bold tracking-wider">Belum Konfirmasi Selesai</span>
-                <span class="text-4xl font-black text-orange-500">0</span>
-            </div>
-            <% if (user.role === 'owner') { %>
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-center h-32">
-                <span class="text-gray-400 text-xs uppercase font-bold tracking-wider">Estimasi Pendapatan Hari Ini</span>
-                <span class="text-2xl font-black text-green-600">Rp 0</span>
-            </div>
-            <% } %>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+        <div onclick="window.location.href='/order'" class="bg-blue-600 p-6 rounded-3xl text-white shadow-lg cursor-pointer transform transition hover:scale-105 active:scale-95">
+            <div class="text-4xl mb-4">👟</div>
+            <h3 class="text-xl font-bold">Buat Order Baru</h3>
+            <p class="text-blue-100 text-sm mt-1">Input cucian masuk sekarang.</p>
         </div>
 
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <div class="p-4 border-b border-gray-50 bg-gray-50/50">
-                <h2 class="font-bold text-gray-700">Aktivitas Terkini</h2>
-            </div>
-            <div class="p-12 text-center">
-                <div class="text-4xl mb-4">📭</div>
-                <p class="text-gray-400 italic">Belum ada transaksi yang tercatat hari ini.</p>
-            </div>
+        <div onclick="window.location.href='/list-order'" class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm cursor-pointer transform transition hover:scale-105 active:scale-95">
+            <div class="text-4xl mb-4">📋</div>
+            <h3 class="text-xl font-bold text-gray-800">List Antrean</h3>
+            <p class="text-gray-500 text-sm mt-1">Cek status pengerjaan sepatu.</p>
         </div>
-    </main>
-</div>
+
+        <div onclick="window.location.href='/pelanggan'" class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm cursor-pointer transform transition hover:scale-105 active:scale-95">
+            <div class="text-4xl mb-4">👥</div>
+            <h3 class="text-xl font-bold text-gray-800">Data Pelanggan</h3>
+            <p class="text-gray-500 text-sm mt-1">Manajemen member dan riwayat.</p>
+        </div>
+    </div>
+</main>
 
 <%- include('partials/footer') %>
