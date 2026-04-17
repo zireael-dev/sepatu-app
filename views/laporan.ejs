@@ -1,0 +1,197 @@
+<%- include('partials/header') %>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<%- include('partials/sidebar') %>
+
+<div class="flex-1 flex flex-col h-screen overflow-hidden">
+    <header class="bg-white shadow-sm p-4 border-b flex justify-between items-center">
+        <h1 class="text-xl font-bold text-gray-800 uppercase tracking-wide">Laporan Keuangan</h1>
+        <div class="text-sm font-bold text-blue-600 bg-blue-50 px-4 py-2 rounded-lg">Bulan: <%= new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }) %></div>
+    </header>
+
+    <main class="flex-1 overflow-y-auto p-6 bg-gray-50">
+        <div class="max-w-6xl mx-auto space-y-6">
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-gradient-to-br from-blue-500 to-blue-600 p-6 rounded-xl shadow-md text-white relative overflow-hidden">
+                    <div class="relative z-10">
+                        <p class="text-blue-100 text-sm font-bold uppercase tracking-wider mb-1">Pendapatan Hari Ini</p>
+                        <h2 class="text-3xl font-black">Rp <%= hariIni.toLocaleString('id-ID') %></h2>
+                    </div>
+                    <div class="absolute -right-4 -bottom-4 text-7xl opacity-20">💰</div>
+                </div>
+
+                <div class="bg-gradient-to-br from-green-500 to-emerald-600 p-6 rounded-xl shadow-md text-white relative overflow-hidden">
+                    <div class="relative z-10">
+                        <p class="text-green-100 text-sm font-bold uppercase tracking-wider mb-1">Total Bulan Ini</p>
+                        <h2 class="text-3xl font-black">Rp <%= bulanIni.toLocaleString('id-ID') %></h2>
+                    </div>
+                    <div class="absolute -right-4 -bottom-4 text-7xl opacity-20">📈</div>
+                </div>
+
+                <div class="bg-gradient-to-br from-purple-500 to-purple-600 p-6 rounded-xl shadow-md text-white relative overflow-hidden">
+                    <div class="relative z-10">
+                        <p class="text-purple-100 text-sm font-bold uppercase tracking-wider mb-1">Sepatu Selesai (Bulan Ini)</p>
+                        <h2 class="text-3xl font-black"><%= dataTabel.length %> <span class="text-lg font-normal">Nota</span></h2>
+                    </div>
+                    <div class="absolute -right-4 -bottom-4 text-7xl opacity-20">👟</div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                    <h3 class="font-bold text-gray-700 mb-4 border-b pb-2">Grafik Pendapatan Harian</h3>
+                    <div class="relative h-72 w-full">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col">
+                    <h3 class="font-bold text-gray-700 mb-4 border-b pb-2">Top Servis Selesai Hari Ini</h3>
+                    <div class="flex-1 overflow-y-auto pr-2 space-y-3">
+                        <% if (layananHariIni && layananHariIni.length > 0) { %>
+                            <% layananHariIni.forEach(function(l) { %>
+                                <div class="flex justify-between items-center p-3 bg-blue-50 border border-blue-100 rounded-lg transition hover:bg-blue-100">
+                                    <div class="flex items-center gap-3">
+                                        <div class="text-xl">👟</div>
+                                        <span class="font-bold text-gray-700 text-sm"><%= l.nama_layanan %></span>
+                                    </div>
+                                    <span class="bg-blue-600 text-white text-xs font-black px-3 py-1 rounded-full shadow-sm"><%= l.jumlah %> Psg</span>
+                                </div>
+                            <% }); %>
+                        <% } else { %>
+                            <div class="h-full flex flex-col items-center justify-center text-center text-gray-500 italic p-6">
+                                <div class="text-3xl mb-2 opacity-50">💤</div>
+                                <span class="text-sm">Belum ada nota yang diselesaikan hari ini.</span>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <div class="flex justify-between items-center mb-4 border-b pb-2">
+                    <h3 class="font-bold text-gray-700">Rincian Transaksi Selesai</h3>
+                    <button onclick="exportTableToCSV('Laporan_ShoesCare.csv')" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition text-sm flex items-center gap-2 shadow-sm">
+                        <span>📊</span> Download Excel (CSV)
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto h-64 border rounded-lg">
+                    <table class="w-full text-left border-collapse text-sm" id="tableLaporan">
+                        <thead class="sticky top-0 bg-gray-100 text-gray-600 shadow-sm">
+                            <tr>
+                                <th class="p-3 border-b">Tanggal & Waktu</th>
+                                <th class="p-3 border-b">ID Order</th>
+                                <th class="p-3 border-b">Nama Pelanggan</th>
+                                <th class="p-3 border-b text-right">Nominal (Rp)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (dataTabel && dataTabel.length > 0) { %>
+                                <% dataTabel.forEach(function(row) { %>
+                                    <tr class="hover:bg-blue-50 border-b transition">
+                                        <td class="p-3 text-gray-500"><%= new Date(row.created_at).toLocaleString('id-ID') %></td>
+                                        <td class="p-3 font-mono text-gray-600">#ORD-<%= row.id %></td>
+                                        <td class="p-3 font-bold text-gray-800"><%= row.nama %> <%= row.kode_id ? `(${row.kode_id})` : '' %></td>
+                                        <td class="p-3 font-bold text-blue-600 text-right"><%= row.total_harga %></td>
+                                    </tr>
+                                <% }); %>
+                            <% } else { %>
+                                <tr>
+                                    <td colspan="4" class="p-8 text-center text-gray-500 italic">Belum ada transaksi selesai bulan ini.</td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<%- include('partials/footer') %>
+
+<script>
+    // 1. RENDER GRAFIK INTERAKTIF
+    const rawData = <%- dataGrafik %>;
+
+    // Ambil label (Tanggal) dan data (Pendapatan)
+    const labels = rawData.map(item => item.tanggal);
+    const dataPendapatan = rawData.map(item => item.pendapatan);
+
+    const ctx = document.getElementById('revenueChart').getContext('2d');
+    const revenueChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Pendapatan (Rp)',
+                data: dataPendapatan,
+                borderColor: '#2563eb', // blue-600
+                backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                borderWidth: 3,
+                pointBackgroundColor: '#ffffff',
+                pointBorderColor: '#2563eb',
+                pointRadius: 4,
+                fill: true,
+                tension: 0.4 // Bikin garis melengkung
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return ' Rp ' + context.parsed.y.toLocaleString('id-ID');
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return 'Rp ' + value.toLocaleString('id-ID');
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // 2. FUNGSI EXPORT KE EXCEL (CSV)
+    function exportTableToCSV(filename) {
+        const table = document.getElementById("tableLaporan");
+        let csv = [];
+
+        // Ambil baris dari tabel HTML
+        for (let i = 0; i < table.rows.length; i++) {
+            let row = [], cols = table.rows[i].querySelectorAll("td, th");
+
+            for (let j = 0; j < cols.length; j++) {
+                // Bersihkan koma atau kutip agar format CSV tidak rusak
+                let data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, "").replace(/,/g, "");
+                row.push(data);
+            }
+            csv.push(row.join(","));
+        }
+
+        // Bikin file CSV dan paksa browser untuk download
+        const csvFile = new Blob([csv.join("\n")], { type: "text/csv" });
+        const downloadLink = document.createElement("a");
+        downloadLink.download = filename;
+        downloadLink.href = window.URL.createObjectURL(csvFile);
+        downloadLink.style.display = "none";
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+    }
+</script>

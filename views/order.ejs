@@ -1,0 +1,205 @@
+<%- include('partials/header') %>
+<%- include('partials/sidebar') %>
+
+<div class="flex-1 flex flex-col h-screen overflow-hidden">
+    <header class="bg-white shadow-sm p-4 border-b flex justify-between">
+        <h1 class="text-xl font-bold text-gray-800">BUAT ORDER BARU</h1>
+        <div id="orderClock" class="text-gray-500 font-mono"></div>
+    </header>
+
+    <main class="flex-1 overflow-y-auto p-6 bg-gray-50">
+        <form action="/order/tambah" method="POST" id="mainOrderForm">
+            <div class="max-w-5xl mx-auto space-y-6">
+
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Cari Pelanggan (Nama/ID/No. WA)</label>
+                    <div class="relative">
+                        <input type="text" id="custSearch" placeholder="Ketik nama, kode member, atau nomor WA..." class="w-full border-2 border-blue-100 rounded-lg px-4 py-3 focus:border-blue-500 outline-none transition">
+                        <input type="hidden" name="pelanggan_id" id="selectedCustId" required>
+
+                        <div id="searchResult" class="absolute z-10 w-full bg-white shadow-xl rounded-b-lg border border-t-0 hidden max-h-60 overflow-y-auto">
+                            </div>
+                    </div>
+
+                    <div id="custInfo" class="mt-3 p-4 bg-blue-50 border border-blue-100 rounded-lg hidden flex justify-between items-center">
+                        <div id="selectedCustName" class="flex-1">
+                            </div>
+                        <button type="button" onclick="resetCustomer()" class="text-red-500 hover:text-red-700 hover:bg-red-50 py-1 px-3 rounded text-xs font-bold uppercase transition ml-4">Ganti</button>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="font-bold text-gray-700 uppercase">Rincian Layanan</h2>
+                        <button type="button" onclick="addServiceRow()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-bold text-sm transition">+ Tambah Layanan</button>
+                    </div>
+
+                    <div id="servicesContainer" class="space-y-4">
+                        </div>
+
+                    <div class="mt-8 border-t-2 pt-4 flex justify-between items-center">
+                        <div class="text-gray-500 font-medium">TOTAL PEMBAYARAN:</div>
+                        <div class="text-3xl font-black text-blue-600" id="displayTotal">Rp 0</div>
+                        <input type="hidden" name="total_harga" id="inputTotalHarga" value="0">
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl shadow-lg transform active:scale-95 transition text-xl">
+                    PROSES PESANAN & KIRIM NOTIFIKASI
+                </button>
+            </div>
+        </form>
+    </main>
+</div>
+
+<%- include('partials/footer') %>
+
+<script>
+    // Data dari Server (EJS)
+    const listPelanggan = <%- JSON.stringify(pelanggan) %>;
+    const listLayanan = <%- JSON.stringify(layanan) %>;
+    let serviceCounter = 0;
+
+    // --- LOGIKA AUTOCOMPLETE PELANGGAN ---
+    const custSearch = document.getElementById('custSearch');
+    const searchResult = document.getElementById('searchResult');
+    const selectedCustId = document.getElementById('selectedCustId');
+
+    custSearch.addEventListener('input', function() {
+        const keyword = this.value.toLowerCase();
+        searchResult.innerHTML = '';
+        if (keyword.length < 1) { searchResult.classList.add('hidden'); return; }
+
+        // Filter pencarian: Nama OR Kode ID OR WhatsApp
+        const filtered = listPelanggan.filter(p =>
+            p.nama.toLowerCase().includes(keyword) ||
+            (p.kode_id && p.kode_id.toLowerCase().includes(keyword)) ||
+            (p.whatsapp && p.whatsapp.includes(keyword))
+        );
+
+        if (filtered.length > 0) {
+            searchResult.classList.remove('hidden');
+            filtered.forEach(p => {
+                const div = document.createElement('div');
+                div.className = 'p-3 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-0 transition';
+
+                // Format alamat dan badge member
+                const alamatLengkap = [p.alamat, p.kota].filter(Boolean).join(', ') || 'Alamat belum diisi';
+                const badgeMember = p.kode_id ?
+                    `<span class="bg-yellow-100 text-yellow-800 text-[10px] px-1.5 py-0.5 rounded ml-2 font-bold">${p.kode_id}</span>` :
+                    `<span class="bg-gray-100 text-gray-500 text-[10px] px-1.5 py-0.5 rounded ml-2">Reguler</span>`;
+
+                div.innerHTML = `
+                    <div class="font-bold text-gray-800 flex items-center">${p.nama} ${badgeMember}</div>
+                    <div class="text-xs text-gray-500 mt-1 flex flex-col space-y-0.5">
+                        <span>📱 ${p.whatsapp}</span>
+                        <span>📍 ${alamatLengkap}</span>
+                    </div>
+                `;
+                div.onclick = () => selectCustomer(p);
+                searchResult.appendChild(div);
+            });
+        } else {
+            searchResult.classList.remove('hidden');
+            searchResult.innerHTML = `<div class="p-4 text-sm text-center text-gray-500 italic">Pelanggan tidak ditemukan.</div>`;
+        }
+    });
+
+    function selectCustomer(p) {
+        selectedCustId.value = p.id;
+
+        const alamatLengkap = [p.alamat, p.kota].filter(Boolean).join(', ') || '-';
+
+        document.getElementById('selectedCustName').innerHTML = `
+            <div class="font-bold text-blue-900 text-lg">${p.nama} <span class="text-xs font-normal text-blue-700 bg-blue-200 px-2 py-0.5 rounded-full ml-1">${p.kode_id || 'Reguler'}</span></div>
+            <div class="text-xs text-blue-800/80 mt-1">📱 ${p.whatsapp} &nbsp;|&nbsp; 📍 ${alamatLengkap}</div>
+        `;
+        document.getElementById('custInfo').classList.remove('hidden');
+        custSearch.classList.add('hidden');
+        searchResult.classList.add('hidden');
+    }
+
+    function resetCustomer() {
+        selectedCustId.value = '';
+        custSearch.value = '';
+        custSearch.classList.remove('hidden');
+        document.getElementById('custInfo').classList.add('hidden');
+        custSearch.focus();
+    }
+
+    // --- LOGIKA DINAMIS LAYANAN ---
+    function addServiceRow() {
+        const id = serviceCounter++;
+        const row = document.createElement('div');
+        row.className = 'p-4 bg-gray-50 rounded-lg border border-gray-200 relative animate-fade-in';
+        row.id = `row-${id}`;
+
+        let options = `<option value="" disabled selected>-- Pilih Layanan --</option>`;
+        listLayanan.forEach(l => {
+            options += `<option value="${l.id}" data-harga="${l.harga}">${l.nama} (Rp ${l.harga.toLocaleString('id-ID')})</option>`;
+        });
+
+        row.innerHTML = `
+            <button type="button" onclick="removeRow(${id})" class="absolute top-2 right-2 text-red-400 hover:text-red-600 font-bold bg-white rounded-full w-6 h-6 flex items-center justify-center shadow-sm">✕</button>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Jenis Layanan</label>
+                    <select class="w-full p-2 border rounded bg-white select-layanan outline-none focus:ring-2 focus:ring-blue-400" onchange="updateRow(${id})">
+                        ${options}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 mb-1 uppercase">Jumlah (Pasang)</label>
+                    <input type="number" min="1" value="1" class="w-full p-2 border rounded input-qty outline-none focus:ring-2 focus:ring-blue-400" oninput="updateRow(${id})">
+                </div>
+            </div>
+            <div id="shoeInputs-${id}" class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-2">
+                </div>
+        `;
+        document.getElementById('servicesContainer').appendChild(row);
+        updateRow(id);
+    }
+
+    function updateRow(rowId) {
+        const row = document.getElementById(`row-${rowId}`);
+        const select = row.querySelector('.select-layanan');
+        const qty = parseInt(row.querySelector('.input-qty').value) || 0;
+        const shoeContainer = document.getElementById(`shoeInputs-${rowId}`);
+
+        // Update Box Sepatu
+        shoeContainer.innerHTML = '';
+        for (let i = 0; i < qty; i++) {
+            shoeContainer.innerHTML += `
+                <input type="text" name="services[${rowId}][${i}][nama_sepatu]" placeholder="Nama Sepatu ke-${i+1} (Contoh: Nike AF1)" required
+                class="text-sm p-2 border rounded border-blue-200 focus:border-blue-500 outline-none w-full">
+                <input type="hidden" name="services[${rowId}][${i}][layanan_id]" value="${select.value}">
+                <input type="hidden" name="services[${rowId}][${i}][harga_satuan]" value="${select.options[select.selectedIndex].getAttribute('data-harga') || 0}">
+            `;
+        }
+        calculateGrandTotal();
+    }
+
+    function removeRow(id) {
+        document.getElementById(`row-${id}`).remove();
+        calculateGrandTotal();
+    }
+
+    function calculateGrandTotal() {
+        let total = 0;
+        document.querySelectorAll('.select-layanan').forEach((sel, index) => {
+            const hrg = parseInt(sel.options[sel.selectedIndex]?.getAttribute('data-harga')) || 0;
+            const q = parseInt(document.querySelectorAll('.input-qty')[index].value) || 0;
+            total += (hrg * q);
+        });
+        document.getElementById('displayTotal').innerText = `Rp ${total.toLocaleString('id-ID')}`;
+        document.getElementById('inputTotalHarga').value = total;
+    }
+
+    // Jam Realtime
+    setInterval(() => {
+        document.getElementById('orderClock').innerText = new Date().toLocaleTimeString('id-ID');
+    }, 1000);
+
+    // Tambahkan 1 baris pertama otomatis saat buka page
+    addServiceRow();
+</script>

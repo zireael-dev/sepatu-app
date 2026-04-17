@@ -1,0 +1,56 @@
+<%- include('partials/header') %>
+<%- include('partials/sidebar') %>
+
+<div class="flex-1 flex flex-col h-screen overflow-hidden">
+    <header class="bg-white shadow-sm p-4 border-b">
+        <h1 class="text-xl font-bold text-gray-800 uppercase tracking-wide">Pengaturan Database Layanan</h1>
+    </header>
+
+    <main class="flex-1 overflow-y-auto p-6 bg-gray-50 flex flex-col md:flex-row gap-6">
+
+        <div class="w-full md:w-1/3 bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-fit">
+            <h2 class="font-bold text-gray-700 mb-4 border-b pb-2 text-green-600">Tambah Servis Baru</h2>
+            <form action="/layanan/tambah" method="POST">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Layanan</label>
+                    <input type="text" name="nama" required placeholder="Misal: Deep Clean Premium" class="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-green-500 outline-none">
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Harga (Rp)</label>
+                    <input type="number" name="harga" required placeholder="50000" class="w-full border border-gray-300 rounded px-3 py-2 focus:ring-2 focus:ring-green-500 outline-none">
+                </div>
+                <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 px-4 rounded transition shadow-sm">Simpan Layanan</button>
+            </form>
+        </div>
+
+        <div class="w-full md:w-2/3 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+            <h2 class="font-bold text-gray-700 mb-4 border-b pb-2">Daftar Harga Aktif</h2>
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-100 text-gray-600 text-sm">
+                        <th class="p-3 border-b">Nama Layanan</th>
+                        <th class="p-3 border-b">Harga</th>
+                        <th class="p-3 border-b text-center">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (layanan && layanan.length > 0) { %>
+                        <% layanan.forEach(function(l) { %>
+                            <tr class="hover:bg-gray-50 border-b">
+                                <td class="p-3 font-medium text-gray-800"><%= l.nama %></td>
+                                <td class="p-3 text-blue-600 font-bold">Rp <%= l.harga.toLocaleString('id-ID') %></td>
+                                <td class="p-3 text-center">
+                                    <a href="/layanan/hapus/<%= l.id %>" onclick="return confirm('Yakin hapus layanan ini?')" class="text-red-500 hover:text-red-700 text-sm font-bold bg-red-50 px-2 py-1 rounded">Hapus</a>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    <% } else { %>
+                        <tr><td colspan="3" class="p-6 text-center text-gray-500 italic">Belum ada layanan. Tambahkan di form sebelah kiri.</td></tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </main>
+</div>
+
+<%- include('partials/footer') %>

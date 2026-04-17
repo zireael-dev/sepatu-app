@@ -1,0 +1,56 @@
+<%
+    const myDetails = details.filter(d => d.order_id === o.id);
+    const totalSepatu = myDetails.length;
+%>
+<div class="order-card bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden" data-nama="<%= o.nama.toLowerCase() %>">
+
+    <div class="p-4 border-b flex justify-between items-center <%= o.status === 'Selesai' ? 'bg-green-50' : 'bg-orange-50' %>">
+        <div>
+            <div class="font-bold text-gray-800 flex items-center">
+                <%= o.nama %>
+                <% if(o.kode_id) { %>
+                    <span class="bg-yellow-100 text-yellow-800 text-[10px] px-1.5 py-0.5 rounded ml-2 font-bold"><%= o.kode_id %></span>
+                <% } %>
+            </div>
+            <div class="text-xs text-gray-500 mt-1">📱 <%= o.whatsapp %> &nbsp;|&nbsp; 📝 #ORD-<%= o.id %></div>
+        </div>
+        <div class="text-right">
+            <% if (o.status === 'Selesai') { %>
+                <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">Selesai</span>
+            <% } else { %>
+                <span class="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider animate-pulse">Diproses</span>
+            <% } %>
+        </div>
+    </div>
+
+    <div class="p-4 bg-white">
+        <p class="text-xs font-bold text-gray-400 uppercase mb-2">Rincian Sepatu (<%= totalSepatu %> Pasang):</p>
+        <ul class="space-y-2 mb-4">
+            <% myDetails.forEach(function(d) { %>
+                <li class="flex justify-between items-start text-sm border-b border-gray-50 pb-2 last:border-0">
+                    <div class="font-medium text-gray-700">👟 <%= d.nama_sepatu %></div>
+                    <div class="text-gray-500 text-right text-xs bg-gray-100 px-2 py-0.5 rounded"><%= d.nama_layanan %></div>
+                </li>
+            <% }); %>
+        </ul>
+
+        <div class="flex justify-between items-end mt-4 pt-4 border-t border-dashed">
+            <div>
+                <div class="text-xs text-gray-400 mb-1">Total Tagihan</div>
+                <div class="font-black text-blue-600 text-lg">Rp <%= o.total_harga.toLocaleString('id-ID') %></div>
+            </div>
+            <div class="text-xs text-gray-400">
+                Masuk: <%= new Date(o.created_at).toLocaleDateString('id-ID', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) %>
+            </div>
+        </div>
+    </div>
+
+    <% if (o.status !== 'Selesai') { %>
+        <div class="p-3 bg-gray-50 border-t flex justify-end">
+            <a href="/order/selesai/<%= o.id %>" onclick="return confirm('Kirim notifikasi WA bahwa sepatu ini sudah selesai?')" class="bg-green-500 hover:bg-green-600 text-white text-sm font-bold py-2 px-6 rounded-lg transition shadow-sm w-full md:w-auto text-center">
+                ✓ Konfirmasi Selesai
+            </a>
+        </div>
+    <% } %>
+
+</div>

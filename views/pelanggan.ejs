@@ -1,0 +1,141 @@
+<%- include('partials/header') %>
+<%- include('partials/sidebar') %>
+
+<div class="flex-1 flex flex-col h-screen overflow-hidden">
+    <header class="bg-white shadow-sm p-4 flex justify-between items-center border-b">
+        <h1 class="text-xl font-bold text-gray-800 uppercase tracking-wide">Database Pelanggan</h1>
+    </header>
+
+    <main class="flex-1 overflow-y-auto p-6 bg-gray-50 flex flex-col xl:flex-row gap-6">
+
+        <div class="w-full xl:w-1/3 bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-fit">
+            <h2 class="font-bold text-gray-700 mb-4 border-b pb-2 text-blue-600">Form Pelanggan Baru</h2>
+
+            <form action="/pelanggan/tambah" method="POST">
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
+                    <input type="text" name="nama" required class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">No. WhatsApp</label>
+                    <input type="text" name="whatsapp" required placeholder="08..." class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Alamat (Desa/Jalan/Gang)</label>
+                    <textarea name="alamat" rows="2" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Kota</label>
+                    <input type="text" name="kota" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <div class="mb-4 border-t pt-4">
+                    <label class="block text-sm font-bold text-gray-800 mb-2">Tipe Pelanggan</label>
+                    <select name="status_member" id="statusMember" class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50">
+                        <option value="Non-Member">Non-Member (Reguler)</option>
+                        <option value="Member">Member</option>
+                    </select>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Kode ID Member</label>
+                    <div class="flex gap-2">
+                        <input type="text" name="kode_id" id="inputKodeId" placeholder="Hanya untuk Member" readonly class="w-full border border-gray-300 rounded px-3 py-2 bg-gray-100 text-gray-600 outline-none">
+                        <button type="button" id="btnGenerate" disabled class="bg-gray-400 text-white font-bold py-2 px-4 rounded cursor-not-allowed transition whitespace-nowrap">
+                            Generate ID
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded transition shadow-sm">Simpan Database</button>
+            </form>
+        </div>
+
+        <div class="w-full xl:w-2/3 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+            <h2 class="font-bold text-gray-700 mb-4 border-b pb-2">Daftar Pelanggan Aktif</h2>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead>
+                        <tr class="bg-gray-100 text-gray-600 uppercase">
+                            <th class="p-3 border-b">ID Member</th>
+                            <th class="p-3 border-b">Nama & Info</th>
+                            <th class="p-3 border-b">WhatsApp</th>
+                            <th class="p-3 border-b">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (pelanggan && pelanggan.length > 0) { %>
+                            <% pelanggan.forEach(function(p) { %>
+                                <tr class="hover:bg-gray-50 transition border-b group">
+                                    <td class="p-3 font-bold text-blue-600">
+                                        <%= p.kode_id ? p.kode_id : '-' %>
+                                    </td>
+                                    <td class="p-3">
+                                        <div class="font-bold text-gray-800"><%= p.nama %></div>
+                                        <div class="text-xs text-gray-500 mt-1"><%= p.alamat %>, <%= p.kota %></div>
+                                    </td>
+                                    <td class="p-3 font-medium text-gray-700"><%= p.whatsapp %></td>
+                                    <td class="p-3">
+                                        <% if (p.status_member === 'Member') { %>
+                                            <span class="bg-yellow-100 text-yellow-800 py-1 px-2 rounded text-xs font-bold">Member</span>
+                                        <% } else { %>
+                                            <span class="bg-gray-200 text-gray-700 py-1 px-2 rounded text-xs font-semibold">Reguler</span>
+                                        <% } %>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="4" class="p-8 text-center text-gray-500 italic">Belum ada data pelanggan masuk.</td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<%- include('partials/footer') %>
+
+<script>
+    const statusMember = document.getElementById('statusMember');
+    const inputKodeId = document.getElementById('inputKodeId');
+    const btnGenerate = document.getElementById('btnGenerate');
+
+    // Deteksi jika pilihan member diganti
+    statusMember.addEventListener('change', function() {
+        if (this.value === 'Member') {
+            // Nyalakan tombol Generate
+            btnGenerate.disabled = false;
+            btnGenerate.classList.remove('bg-gray-400', 'cursor-not-allowed');
+            btnGenerate.classList.add('bg-green-500', 'hover:bg-green-600', 'cursor-pointer');
+            inputKodeId.placeholder = "Klik tombol Generate 👉";
+        } else {
+            // Matikan tombol Generate dan kosongkan ID
+            btnGenerate.disabled = true;
+            btnGenerate.classList.add('bg-gray-400', 'cursor-not-allowed');
+            btnGenerate.classList.remove('bg-green-500', 'hover:bg-green-600', 'cursor-pointer');
+
+            inputKodeId.value = '';
+            inputKodeId.placeholder = "Hanya untuk Member";
+            inputKodeId.classList.add('bg-gray-100'); // Kembalikan ke warna abu-abu
+        }
+    });
+
+    // Deteksi jika tombol Generate ditekan
+    btnGenerate.addEventListener('click', function() {
+        // Bikin ID Acak (Format: MBR- + 5 Digit Angka Acak)
+        const randomNumbers = Math.floor(10000 + Math.random() * 90000);
+        const generatedId = "MBR-" + randomNumbers;
+
+        // Masukkan ID ke kolom dan kunci (readonly otomatis aktif dari awal)
+        inputKodeId.value = generatedId;
+
+        // Kasih efek warna kuning biar kelihatan berhasil
+        inputKodeId.classList.remove('bg-gray-100');
+        inputKodeId.classList.add('bg-yellow-50', 'font-bold', 'text-blue-700');
+    });
+</script>

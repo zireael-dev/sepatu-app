@@ -1,0 +1,106 @@
+<%- include('partials/header') %>
+<%- include('partials/sidebar') %>
+
+<div class="flex-1 flex flex-col h-screen overflow-hidden">
+    <header class="bg-white shadow-sm border-b flex flex-col pt-4 px-6 gap-4">
+        <div class="flex flex-col md:flex-row justify-between items-center w-full">
+            <h1 class="text-xl font-bold text-gray-800 uppercase tracking-wide">List Orderan & Antrean</h1>
+            <div class="relative w-full md:w-72 mt-3 md:mt-0">
+                <input type="text" id="searchOrder" placeholder="Cari nama pelanggan..." class="w-full border-2 border-gray-200 rounded-lg pl-10 pr-4 py-2 focus:border-blue-500 outline-none transition text-sm">
+                <span class="absolute left-3 top-2.5 text-gray-400">🔍</span>
+            </div>
+        </div>
+
+        <div class="flex space-x-8 mt-2">
+            <button onclick="switchTab('antrean')" id="btn-antrean" class="pb-3 border-b-4 border-blue-600 font-bold text-blue-600 transition">
+                Antrean Aktif
+            </button>
+            <button onclick="switchTab('riwayat')" id="btn-riwayat" class="pb-3 border-b-4 border-transparent text-gray-500 hover:text-gray-700 font-bold transition">
+                Riwayat Selesai (30 Hari)
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-1 overflow-y-auto p-6 bg-gray-50">
+        <div class="max-w-6xl mx-auto">
+
+            <div id="tab-antrean" class="tab-content block">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <% let antreanKosong = true; %>
+                    <% orders.forEach(function(o) { %>
+                        <% if (o.status !== 'Selesai') { antreanKosong = false; %>
+                            <%- include('partials/order-card', {o: o, details: details}) %>
+                        <% } %>
+                    <% }); %>
+
+                    <% if (antreanKosong) { %>
+                        <div class="col-span-1 lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+                            <div class="text-5xl mb-4">✨</div>
+                            <h3 class="text-lg font-bold text-gray-700">Semua sepatu sudah bersih!</h3>
+                            <p class="text-gray-500 mt-2">Tidak ada antrean cucian aktif saat ini.</p>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+
+            <div id="tab-riwayat" class="tab-content hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <% let riwayatKosong = true; %>
+                    <% orders.forEach(function(o) { %>
+                        <% if (o.status === 'Selesai') { riwayatKosong = false; %>
+                            <%- include('partials/order-card', {o: o, details: details}) %>
+                        <% } %>
+                    <% }); %>
+
+                    <% if (riwayatKosong) { %>
+                        <div class="col-span-1 lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+                            <div class="text-5xl mb-4">📭</div>
+                            <h3 class="text-lg font-bold text-gray-700">Riwayat masih kosong</h3>
+                            <p class="text-gray-500 mt-2">Belum ada order yang diselesaikan dalam 30 hari terakhir.</p>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<%- include('partials/footer') %>
+
+<script>
+    // FUNGSI PINDAH TAB
+    function switchTab(tabName) {
+        // Hide semua konten
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('block'));
+
+        // Reset warna tombol
+        document.getElementById('btn-antrean').classList.remove('border-blue-600', 'text-blue-600');
+        document.getElementById('btn-antrean').classList.add('border-transparent', 'text-gray-500');
+        document.getElementById('btn-riwayat').classList.remove('border-blue-600', 'text-blue-600');
+        document.getElementById('btn-riwayat').classList.add('border-transparent', 'text-gray-500');
+
+        // Tampilkan konten yang dipilih
+        document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+        document.getElementById(`tab-${tabName}`).classList.add('block');
+
+        // Warnai tombol yang dipilih
+        document.getElementById(`btn-${tabName}`).classList.remove('border-transparent', 'text-gray-500');
+        document.getElementById(`btn-${tabName}`).classList.add('border-blue-600', 'text-blue-600');
+    }
+
+    // FUNGSI PENCARIAN (Berlaku di kedua tab)
+    const searchOrder = document.getElementById('searchOrder');
+    const orderCards = document.querySelectorAll('.order-card');
+
+    if (searchOrder) {
+        searchOrder.addEventListener('input', function() {
+            const keyword = this.value.toLowerCase();
+            orderCards.forEach(card => {
+                const nama = card.getAttribute('data-nama');
+                card.style.display = nama.includes(keyword) ? 'block' : 'none';
+            });
+        });
+    }
+</script>
